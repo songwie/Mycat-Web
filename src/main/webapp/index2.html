@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta>
-<title>Mycat-Web</title>
+<title>Mycat-eye</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta http-equiv="Cache-Control" content="no-store" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -55,8 +55,8 @@
 		<header class="main-header">
 			<!-- Logo -->
 			<a href="index2.html" class="logo"> <!-- mini logo for sidebar mini 50x50 pixels -->
-				<span class="logo-mini" style="font-weight: 100">Mycat-Web</span> <!-- logo for regular state and mobile devices -->
-				<span class="logo-lg" style="font-weight: 100; font-size: 30px;">Mycat-Web</span>
+				<span class="logo-mini" style="font-weight: 100">Mycat-eye</span> <!-- logo for regular state and mobile devices -->
+				<span class="logo-lg" style="font-weight: 100; font-size: 30px;">Mycat-eye</span>
 			</a>
 
 			<!-- Header Navbar: style can be found in header.less -->
@@ -114,11 +114,17 @@
 								href="javascript:loadContext('page/manger/jmx.html');"><i
 									class="fa fa-circle-o"></i>mycat-VM管理</a></li>
 							<li><a
-								href="javascript:loadContext('page/sys/menu/menu.html');"><i
-									class="fa fa-circle-o"></i>mycat分表管理</a></li>
+								href="javascript:loadContext('page/manger/sysparam.html');"><i
+									class="fa fa-circle-o"></i>mycat 系统参数</a></li>
 							<li><a
 								href="javascript:loadContext('page/sys/role/role.html');"><i
 									class="fa fa-circle-o"></i>mycat分库管理</a></li>
+							<li><a
+								href="javascript:loadContext('page/manger/zkconfig.html');"><i
+									class="fa fa-circle-o"></i>Zookeeper配置</a></li>						
+							<li><a
+								href="javascript:loadContext('page/manger/zkread.html');"><i
+									class="fa fa-circle-o"></i>Zookeeper信息</a></li>															
 						</ul></li>
 					<li class="treeview"><a href="#"> <i
 							class="fa fa-dashboard"></i><span>Mycat-监控</span><i
@@ -126,8 +132,8 @@
 					</a>
 						<ul class="treeview-menu">
 							<li><a
-								href="javascript:loadContext('page/sys/menu/menu.html');"><i
-									class="fa fa-circle-o"></i>mycat访问监控</a></li>
+								href="javascript:loadContext('page/monitor/jrds.html');"><i
+									class="fa fa-circle-o"></i>mycat性能监控</a></li>
 <!-- 							<li class="treeview"><a href="#"> <i class="fa fa-table"></i><span>mycat-VM监控</span><i
 									class="fa fa-angle-left pull-right"></i></a>
 								<ul class="treeview-menu">
@@ -143,10 +149,10 @@
 								</ul>
 							</li> -->
 							<li><a
-								href="javascript:loadContext('page/sys/role/role.html');"><i
-									class="fa fa-circle-o"></i>mycat服务监控</a></li>
+								href="javascript:loadContext('page/monitor/datahostinfo.html');"><i
+									class="fa fa-circle-o"></i>mycat物理节点</a></li>
 							<li><a
-								href="javascript:loadContext('page/sys/org/org.html');"><i
+								href="javascript:loadContext('page/monitor/masterslaveinfo.html');"><i
 									class="fa fa-circle-o"></i>主从同步监控</a></li>
 							<li><a
 								href="javascript:loadContext('page/sys/code/code.html');"><i
@@ -166,10 +172,10 @@
 								href="javascript:loadContext('page/sys/menu/menu.html');"><i
 									class="fa fa-circle-o"></i>SQL黑名单监控</a></li>
 							<li><a
-								href="javascript:loadContext('page/sys/role/role.html');"><i
-									class="fa fa-circle-o"></i>异常SQL监控</a></li>
+								href="javascript:loadContext('page/sql/sql.html');"><i
+									class="fa fa-circle-o"></i>SQL监控</a></li>
 							<li><a
-								href="javascript:loadContext('page/sys/org/org.html');"><i
+								href="javascript:loadContext('page/sql/sqlslow.html');"><i
 									class="fa fa-circle-o"></i>慢SQL统计</a></li>
 						</ul></li>
 				</ul>
@@ -203,7 +209,10 @@
 		src="static/jquery-resize/jquery.ba-resize.js"></script>
 
 
+	<script type="text/javascript" src="static/echarts/build/dist/echarts.js"></script>
+	
 	<script type="text/javascript" src="static/mmgrid/mmGrid.js"></script>
+	
 	<script type="text/javascript" src="static/mmgrid/mmPaginator.js"></script>
 
 	<script type="text/javascript" src="resources/js/json2.min.js"></script>
