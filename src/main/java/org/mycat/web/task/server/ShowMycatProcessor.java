@@ -14,13 +14,13 @@ import org.springframework.stereotype.Service;
 public class ShowMycatProcessor extends BaseService implements ITask {
 	private static final String NAMESPACE = "MYCATSHOWPROCESSOR";
 	
-	public ShowMycatProcessor(){
-		Long period = Long.parseLong((String)RainbowProperties.getProperties("show.period"));
-		if(period == null || period < 30000){
-			period = UPDATE_PERIOD;
-		}
-		TaskManger.getInstance().addTask(this, period);
-	}
+//	public ShowMycatProcessor(){
+//		Long period = Long.parseLong((String)RainbowProperties.getProperties("show.period"));
+//		if(period == null || period < 30000){
+//			period = UPDATE_PERIOD;
+//		}
+//		TaskManger.getInstance().addTask(this, period);
+//	}
 	
 	@Override
 	public void excute(String dbName, Date nowDate) {
@@ -32,4 +32,19 @@ public class ShowMycatProcessor extends BaseService implements ITask {
 		}
 	}
 
+	public static String ShowMycatSqlonlineServer(){
+	return (String)RainbowProperties.getProperties("sqlonline.server");
+
+	}
+	
+	public static String ShowMycatSqlonlineUser(){
+		return (String)RainbowProperties.getProperties("sqlonline.user");
+
+		}
+	
+	public static String ShowMycatSqlonlinePasswd(){
+		return (String)RainbowProperties.getProperties("sqlonline.passwd");
+
+		}
+	
 }

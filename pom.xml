@@ -98,6 +98,7 @@
 		<spring-framework.version>4.1.6.RELEASE</spring-framework.version>
 
 		<druid-version>1.0.14</druid-version>
+		<jsch-version>0.1.53</jsch-version>
 		<jstl.version>1.2</jstl.version>
 		<fastjson.version>1.1.22</fastjson.version>
 
@@ -133,6 +134,16 @@
 	</properties>
 	
 	<dependencies>
+        <dependency>
+           <groupId>com.alibaba</groupId>
+           <artifactId>druid</artifactId>
+           <version>${druid-version}</version>
+        </dependency>	
+        <dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>${jsch-version}</version>
+	    </dependency>	
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
@@ -153,6 +164,12 @@
 			<groupId>org.apache.curator</groupId>
 			<artifactId>curator-framework</artifactId>
 			<version>${curator.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>	
 			<dependency>
 				<groupId>org.xerial</groupId>
@@ -411,11 +428,11 @@
 				<artifactId>jrds</artifactId>
 				<version>${jrds.version}</version>
 			</dependency> -->
-			<dependency>
+ 			<dependency>
 				<groupId>log4j</groupId>
 				<artifactId>log4j</artifactId>
 				<version>${log4j1.version}</version>
-			</dependency>
+			</dependency> 
 <!-- 			<dependency>
 				<groupId>org.rrd4j</groupId>
 				<artifactId>rrd4j</artifactId>

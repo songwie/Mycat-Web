@@ -9,11 +9,17 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Map;
 
+import org.apache.curator.utils.ZKPaths;
 import org.hx.rainbow.common.context.RainbowContext;
 import org.hx.rainbow.common.core.service.BaseService;
+import org.hx.rainbow.common.exception.AppException;
 import org.hx.rainbow.common.util.ObjectId;
+import org.mycat.web.util.Constant;
+import org.mycat.web.util.ZookeeperCuratorHandler;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -21,10 +27,16 @@ import freemarker.template.Template;
 @Lazy
 @Service("snmpservice")
 public class SNMPService extends BaseService {
-	private static final String NAMESPACE = "SYSSNMP";
+	//private static final String NAMESPACE = "SYSSNMP";
+	
+	private ZookeeperCuratorHandler zkHander=  ZookeeperCuratorHandler.getInstance();
 
-	public RainbowContext query(RainbowContext context) {
-		super.query(context, NAMESPACE);
+	public RainbowContext query(RainbowContext context) throws Exception {
+	//	super.query(context, NAMESPACE);
+	//	return context;
+		//context.addRows(ZookeeperService.getInstance().getSnmp());
+		context.addRows(zkHander.getChildNodeData(Constant.MYCAT_SNMP));
+		context.setTotal(context.getRows().size());		
 		return context;
 	}
 
@@ -39,8 +51,12 @@ public class SNMPService extends BaseService {
 			context.addAttr("jrdsfile", jrdsconfg);
 			context.addAttr("fileName", jrdsconfg);
 			context.addAttr("guid", new ObjectId().toString());
-			super.insert(context, NAMESPACE);
-			
+			//super.insert(context, NAMESPACE);
+			String guid=new ObjectId().toString();
+			//ZookeeperService.getInstance().insertSnmp(guid,context.getAttr());
+			zkHander.createNode(ZKPaths.makePath(Constant.MYCAT_SNMP, guid), JSON.toJSONString(context.getAttr()));
+			context.setMsg("新增成功!");
+			context.setSuccess(true);			
 			createsnmpjrds(jrdsconfg, context.getAttr());
 		} catch (Exception e) {
 			context.setSuccess(false);
@@ -89,7 +105,29 @@ public class SNMPService extends BaseService {
 
 
 	public RainbowContext delete(RainbowContext context) {
-		
+		String jrdsfile ="";
+		try{
+			String guid=(String)context.getAttr("guid");
+			/*Map<String, Object> data =ZookeeperService.getInstance().getSnmpNode(guid);
+			ZookeeperService.getInstance().delSnmp(guid);*/
+			String path = ZKPaths.makePath(Constant.MYCAT_SNMP, guid);
+			Map<String, Object> data = zkHander.getNodeDataForMap(path);
+			zkHander.deleteNode(path);
+			context.setMsg("删除成功!");
+			context.setSuccess(true);
+			jrdsfile = (String)data.get("fileName");
+	
+		}catch (Exception e) {
+			logger.error(e.getCause());
+			context.setSuccess(false);
+			throw new AppException("删除失败,系统异常!case:" + e.getMessage(), e.getCause());
+		}				
+		if(jrdsfile != null && !jrdsfile.isEmpty()){
+			new File(jrdsfile).delete();
+		}		
+		context.getAttr().clear();
+		return context;
+		/*
 		Map<String, Object> data = super.getDao().get(NAMESPACE, "query", context.getAttr());
 		super.getDao().delete(NAMESPACE, "delete", context.getAttr());
 		String jrdsfile = (String)data.get("fileName");
@@ -98,5 +136,6 @@ public class SNMPService extends BaseService {
 		}
 		context.getAttr().clear();
 		return context;
+		*/
 	}
 }

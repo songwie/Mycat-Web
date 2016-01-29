@@ -26,8 +26,12 @@ public class DataSourceUtils {
 
 	private static final Logger logger = LogManager
 			.getLogger(DataSourceUtils.class);
+	private static final String DEFULAT_MYCAT_MANGER = "9066";
 	
+	public static final String DEFAULT_MYSQL_DRIVER_CLASS = "com.mysql.jdbc.Driver";
+
 	private volatile static DataSourceUtils dataSourceUtils = null;
+	
 	private DataSourceUtils(){};
 	
 	public static DataSourceUtils getInstance(){
@@ -42,10 +46,12 @@ public class DataSourceUtils {
 	}
 	
 	private static final String NAME_SUFFIX = "dataSource";
-
-	public  boolean register(Map<String, Object> jdbc, String dbName) throws Exception {
+	
+	
+	public  boolean register(Map<String, Object> jdbc, String dbName, String mycatType) throws Exception {
 		Connection conn = null;
 		try {
+			dbName = dbName + mycatType;
 			String beanName = dbName + NAME_SUFFIX;
 			remove(dbName);
 			ConfigurableApplicationContext applicationContext = 
@@ -76,20 +82,37 @@ public class DataSourceUtils {
 		}
 	}
 	
-	public boolean register(String dbName) throws Exception {
-		if(!SpringApplicationContext.getApplicationContext().containsBean(dbName + "NAME_SUFFIX")){
+	public boolean register(String dbName, String mycatType) throws Exception {
+		if(!SpringApplicationContext.getApplicationContext().containsBean(dbName + mycatType + NAME_SUFFIX)){
 			RainbowContext context = new RainbowContext("mycatService", "query");
 			context.addAttr("mycatName", dbName);
-			context = SoaManager.getInstance().invoke(context);
+			context = SoaManager.getInstance().invokeNoTx(context);
 			if (context.getRows() == null || context.getRows().size() == 0) {
 				return false;
 			}
 			Map<String, Object> row = context.getRow(0);
-			return register(row, dbName);
+			row.put("port", mycatType);
+			return register(row, dbName, mycatType);
 		}
 		return true;
 	}
 
+	public  boolean register(Map<String, Object> jdbc, String dbName) throws Exception {
+		return register(jdbc, dbName, DEFULAT_MYCAT_MANGER);
+	}
+	
+	public boolean register(String dbName) throws Exception {
+		return register(dbName, DEFULAT_MYCAT_MANGER);
+	}
+	public String getDbName(String dbName)  {
+		int n_pos = dbName.indexOf(DEFULAT_MYCAT_MANGER);
+		if (n_pos>0) {
+		   return dbName.substring(0,n_pos);
+		}
+		else {
+		   return dbName;
+		}
+	}
 	public  void remove(String dbName) {
 		SpringApplicationContext.removeBeans(dbName + NAME_SUFFIX, dbName + "sqlSessionFactory", dbName + "sqlSessionTemplate", dbName
 				+ "transactionManager");
@@ -98,8 +121,8 @@ public class DataSourceUtils {
 	private  GenericBeanDefinition getDefinition(Map<String, Object> jdbc) {
 		GenericBeanDefinition messageSourceDefinition = new GenericBeanDefinition();
 		Map<String, Object> original = new HashMap<String, Object>();
-		original.put("driverClassName", "com.mysql.jdbc.Driver");
-		original.put("url", DialectUtils.getMySQLURL((String)jdbc.get("ip"), (String)jdbc.get("port"), (String)jdbc.get("dbName")));
+		original.put("driverClassName", DEFAULT_MYSQL_DRIVER_CLASS);
+		original.put("url", getMySQLURL((String)jdbc.get("ip"), (String)jdbc.get("port"), (String)jdbc.get("dbName")));
 		original.put("username", jdbc.get("username"));
 		original.put("password", jdbc.get("password"));
 		
@@ -112,6 +135,10 @@ public class DataSourceUtils {
 		messageSourceDefinition.setDestroyMethodName("close");
 		messageSourceDefinition.setPropertyValues(new MutablePropertyValues(original));
 		return messageSourceDefinition;
+	}
+	
+	private String getMySQLURL(String ip, String port, String server) {
+		return "jdbc:mysql://" + ip + ":" + port + "/" + server + "?characterEncoding=utf8";
 	}
 
 	private  GenericBeanDefinition getSqlSessionFactoryDef(Object dbSource) {

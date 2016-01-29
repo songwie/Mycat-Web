@@ -162,7 +162,10 @@ var Add_Callback = function(){
 				showDialog($("#container"),"新增","操作成功!","success");
 				$(':input','#add_form').not(':button, :submit, :reset, :hidden,select').val('');
 			}else{
-				showDialog($("#container"),"","操作失败!","danger");
+				var failmsg="操作失败!";
+				if(j_obj.msg!=null)
+					failmsg=j_obj.msg;
+				showDialog($("#container"),"",failmsg,"danger");
 			}
 		} catch (e) {
 			alert("异常!")
@@ -189,7 +192,10 @@ var Callback = function(){
 						mmgrid.load();
 					}
 				}else{
-					showDialog($("#container"),"","操作失败!","danger");
+					var failmsg="操作失败!";
+					if(j_obj.msg!=null)
+						failmsg=j_obj.msg;
+					showDialog($("#container"),"",failmsg,"danger");
 				}
 			} catch (e) {
 				alert("异常!")
@@ -209,13 +215,13 @@ function delObj(serviceName,method,_id,extra_call){
 	if(confirm("你确定删除这条记录吗?")){
 		var rainbow = new Rainbow();
 		var row = {"guid":_id};
-		var rows =  mmgrid.rows();
+		/*var rows =  mmgrid.rows();
 		for(var i=0;i<rows.length;i++){
 			if(rows[i].guid == _id){
 				row = rows[i];
 				break;
 			}
-		}
+		}*/
 		rainbow.addRows(row);
 		rainbow.setAttr(row);
 		if(extra_call){
@@ -300,7 +306,30 @@ function addForm(serviceName,method,_formid,extra_call){
 	   rainbowAjax.excute(rainbow,new Add_Callback());
 }
 
+ function getParam(url,name){
+        var search = url;
+        var pattern = new RegExp("[?&]"+name+"\=([^&]+)", "g");
+        var matcher = pattern.exec(search);
+        var items = null;
+        if(null != matcher){
+                try{
+                        items = decodeURIComponent(decodeURIComponent(matcher[1]));
+                }catch(e){
+                        try{
+                                items = decodeURIComponent(matcher[1]);
+                        }catch(e){
+                                items = matcher[1];
+                        }
+                }
+        }
+        return items;
+};
+var zkPath = "";
+var zkId = "";
 function loadContext(url,copy){
+	
+	if(intervalId)
+		clearInterval(intervalId); 
 	if(copy && mmgrid){
 		var rows =  mmgrid.selectedRows();
 		var length = rows.length;
@@ -311,6 +340,9 @@ function loadContext(url,copy){
 			return;
 		}
 	}
+
+	zkPath=getParam(url,"zkpath");
+	zkId=getParam(url,"zkid");
    	$(".content-wrapper").load(url,function(response,status,xhr){
    		$(".content").resize(function(){});
    		
@@ -335,4 +367,147 @@ function ready4AddForm(extra_call){
 		   }
 		   data = {};
 	   }
+}
+
+
+
+
+function showModal(myModal){
+	
+	$("#"+myModal).modal('show');
+}
+
+function loadFormData(formId,jsonStr){
+    var obj = eval("("+jsonStr+")");
+    var key,value,tagName,type,arr;
+    for(x in obj){
+        key = x;
+        value = obj[x];
+        $("[name='"+key+"']").each(function(){
+            tagName = $(this)[0].tagName;
+            type = $(this).attr('type');
+            if(tagName=='INPUT'){
+                if(type=='radio'){
+                    $(this).prop('checked',$(this).val()==value);
+                }else if(type=='checkbox'){
+                    arr = String(value).split(',');
+                    for(var i =0;i<arr.length;i++){
+                    	$(this).prop('checked',false);
+                        if($(this).val()== arr[i]){
+                            $(this).prop('checked',true);
+                            break;
+                        }
+                    }
+                }else{
+                    $(this).val(value);
+                }
+            }else if(tagName=='SELECT'){
+            	var dataArray = String(value).split(',');
+            	if(typeof $(tagName).attr("multiple")=="undefined"){
+            		  $(this).multiselect('select', dataArray[0]);
+            		  $(this).multiselect("refresh");
+            	}else{
+            		  $(this).multiselect('deselectAll',false);
+            		  $(this).multiselect('select', dataArray);
+            		  $(this).multiselect("refresh");
+            	}
+            }else if(tagName=='TEXTAREA'){
+            	$(this).val(value);
+            }
+        });
+    }
+}
+
+function datagrid(tableId,url,columns){
+	$("#"+tableId).bootstrapTable({
+		url:url,
+		columns : columns,
+		dataType : "json",
+		locale: 'zh-CN',
+		pageList : [10,20,30,50],
+		sidePagination : "server",
+		showPaginationSwitch : true,
+		pagination:true,
+		paginationHAlign : "right",
+		showColumns : true,
+		showRefresh : true,
+		showToggle : true,
+		search : true,
+		showPaginationSwitch : true,
+		minimumCountColumns : 2,
+		//height : 500,
+		pageList : [10,20,30,50],
+		queryParamsType :"limit",
+		pageSize:10,
+		pageNumber:1,
+		queryParams : function(params){
+			return {
+				offset : params.offset,
+				limit : params.limit,
+				search : params.search
+			}
+		},
+		cache :false   
+	
+	});
+}
+
+function deleteRow(serviceName,method,data,callback){
+	var rainbow = new Rainbow();
+	rainbow.setAttr(data);
+	rainbow.addRows(data);
+	rainbow.setService(serviceName);
+	rainbow.setMethod(method);
+	handler(rainbow,callback);
+}
+
+function handler(rainbow, callback) {
+	try {
+		jQuery.ajax({
+			cache : false,
+			type : 'POST',
+			dataType : "json",
+			url : './dispatcherAction/execute.do',
+			data : $.parseJSON(JSON.stringify(rainbow)),
+			error : function() {
+				showDialog($("#container"), "", "请求失败!", "danger");
+			},
+			success : function(response) {
+				if (response.success == true) {
+					showDialog($("#container"), "", "操作成功!", "success");
+					if (callback instanceof Function) {
+						callback();
+					}
+				} else {
+					showDialog($("#container"), "", response.msg, "danger");
+				}
+			}
+		});
+	} catch (e) {
+		alert("异常!");
+	} finally {
+		if ($("button[data-loading-text]"))
+			$("button[data-loading-text]").button('reset');
+			$("button").button('reset');
+	}
+	return false;
+}
+
+function saveForm (serviceName,method,form,data,callback){
+	   var event = window.event || arguments[0];
+	   var evt = event.srcElement ? event.srcElement : event.target; 
+	   $(evt).button('loading');
+	   var formData =serializeObject($("#"+form),true);
+	   $.extend(formData,data);
+	   var rainbow = new Rainbow();
+	   rainbow.setAttr(formData);
+	   rainbow.addRows(formData);
+	   rainbow.setService(serviceName);
+	   rainbow.setMethod(method);
+	   handler(rainbow,callback);
+}
+
+function destroyValidator(form){
+	 $("#"+form).bootstrapValidator("destroy");
+	 
 }
